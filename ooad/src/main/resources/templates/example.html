@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <title>Handsontable - jQuery grid editor. Excel-like grid editing with HTML &amp; JavaScript</title>
+
+    <link rel="stylesheet" media="screen"
+          href="https://cdn.jsdelivr.net/npm/handsontable@latest/dist/handsontable.full.min.css">
+    <link rel="stylesheet" media="screen"
+          href="https://www.jqueryscript.net/demo/Excel-like-Data-Grid-Editor-For-jQuery-handsontable/demo/css/samples.css">
+    <link href="https://www.jqueryscript.net/css/top.css" rel="stylesheet" type="text/css">
+<!--    <link rel="stylesheet" href="css/example.css">-->
+</head>
+
+<body class="home">
+<div id="container" style="margin-top:100px;">
+    <div class="centerLayout">
+
+        <div id="example"></div>
+
+        <script
+                src="https://www.jqueryscript.net/demo/Excel-like-Data-Grid-Editor-For-jQuery-handsontable/lib/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/handsontable@latest/dist/handsontable.full.min.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+        <script>
+
+
+
+
+
+                  var foo = [];
+
+                  axios.get('http://localhost:8081/clients')
+                  .then(function (response) {
+
+                     //button
+                     var button = document.createElement("button");
+                     button.style="margin-left:200px"
+                     button.innerHTML = "Update";
+                     var body = document.getElementsByTagName("body")[0];
+                     body.appendChild(button);
+
+                     button.addEventListener ("click", function() {
+
+                         let article = new Array();
+
+
+                         article = hot.getData();
+                         console.log(article);
+
+
+
+
+                        for(let i=0;i<article.length;i++){
+
+                           console.log(i);
+
+                           axios.post('http://localhost:8081/clients', {
+                           id:article[i][0],
+                           name:article[i][1],
+                           email:article[i][2],
+                           stt:i
+
+                        })
+                        .then(function (response) {
+                           location.reload();
+                           // console.log(response.data);
+                        })
+                        .catch(function (error) {
+                           alert("ban da nhap sai")
+                        });
+
+                        }
+
+
+
+
+                     });
+                     //doi sang array
+
+                     foo = response.data.map(doc => Object.values(doc));
+                     const container = document.querySelector('#example');
+
+            const hot = new Handsontable(container, {
+               data: foo,
+               colHeaders: ['Tên doanh nghiệp ', 'Number', 'String','Mã số thuế'],
+
+               columns: [
+                  {
+                     type: 'text'
+                  },
+                  {
+                     type: 'text'
+                  },
+                  {
+                     type: 'text'
+                  },
+                  {
+                     type: 'text'
+                  },
+
+               ],
+               afterRemoveRow: console,
+               hiddenColumns: {
+                  // specify columns hidden by default
+                  columns: [0,3]
+               },
+
+               rowHeaders: true,
+               // height: 'auto',
+               // width: 'auto',
+               dropdownMenu: true,
+               filters: true,
+               contextMenu: true,
+               licenseKey: 'non-commercial-and-evaluation'
+            })
+
+            let all = new Array();
+            let all1 =new Array();
+            let lol =new Array();
+            let lol1 =new Array();
+
+
+
+
+            hot.addHook('beforeRemoveRow', (row, amount,physicalRows,[source]) => {
+               all = hot.getData();
+               lol=new Array();
+
+               for(let i=0;i<all.length;i++){
+                  lol.push(all[i][0]);
+               }
+               console.log(lol);
+
+
+
+               })
+
+                     hot.addHook('afterRemoveRow', (row, amount,physicalRows,[source]) => {
+                        all1 = hot.getData();
+                        lol1=new Array();
+                        for(let i=0;i<all1.length;i++){
+                           lol1.push(all1[i][0]);
+                        }
+
+                        console.log(lol1);
+                        let difference = lol.filter(x => !lol1.includes(x));
+                        console.log(difference);
+
+                        for(let i=0;i<difference.length;i++){
+                           var url ='http://localhost:8081/clients/';
+                              url =url.concat(difference[i]);
+                              console.log(url);
+                              axios({
+                                 method: 'delete',
+                                 url: url,
+
+                              })
+                        }
+
+
+                  })
+
+            const filtersPlugin = hot.getPlugin('Filters');
+
+
+
+
+
+          })
+
+                  .catch(function (error) {
+                     console.log(error);
+                  });
+
+
+
+
+
+
+
+
+         </script>
+
+    </div>
+</div>
+</body>
+
+</html>
